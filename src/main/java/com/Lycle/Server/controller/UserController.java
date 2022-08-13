@@ -1,6 +1,7 @@
 package com.Lycle.Server.controller;
 
 import com.Lycle.Server.config.auth.UserPrincipal;
+import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.dto.BasicResponse;
 import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
@@ -139,7 +140,7 @@ public class UserController {
 
     @PutMapping("/user/profile")
     public ResponseEntity<BasicResponse> updateInfo(Authentication authentication, UpdateInfoDto updateInfoDto){
-        UserPrincipal userPrincipal = (UserPrincipal) authentication;
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         userService.updateInfo(userPrincipal.getId(), updateInfoDto);
         BasicResponse updateResponse = BasicResponse.builder()
                 .code(HttpStatus.CREATED.value())

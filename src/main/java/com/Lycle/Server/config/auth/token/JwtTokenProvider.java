@@ -1,12 +1,10 @@
 package com.Lycle.Server.config.auth.token;
 
-import com.Lycle.Server.config.auth.UserPrincipal;
-import com.Lycle.Server.domain.User.Role;
+import com.Lycle.Server.domain.User.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,7 +16,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Component
@@ -26,10 +23,10 @@ public class JwtTokenProvider {
 
     private final UserDetailsService userDetailsService;
 
-    private String secretKey = "lycle-jwt-token";
+    private String secretKey = "lyclejwttoken";
 
-    // 토큰 유효시간 50분
-    private long tokenValidTime = 50 * 60 * 1000L;
+    // 토큰 유효시간 60분
+    private long tokenValidTime = 60 * 60 * 1000L;
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct
@@ -38,10 +35,12 @@ public class JwtTokenProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(String email,List<String>Roles) {
+    public String createToken(User user) {
 
-        Claims claims = Jwts.claims().setSubject(email); // JWT payload 에 저장되는 정보단위
-        claims.put("roles", Roles); // 정보는 key / value 쌍으로 저장된다.
+        Claims claims = Jwts.claims().setSubject(user.getEmail()); // JWT payload 에 저장되는 정보단위
+        claims.put("role", user.getId());// 정보는 key / value 쌍으로 저장된다.
+        claims.put("role", user.getRole());
+        claims.put("role", user.getNickname());
         Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims) // 정보 저장
@@ -64,7 +63,7 @@ public class JwtTokenProvider {
 
     // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
     public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("X-AUTH-TOKEN");
+        return request.getHeader("Authorization");
     }
 
     // 토큰의 유효성 + 만료일자 확인

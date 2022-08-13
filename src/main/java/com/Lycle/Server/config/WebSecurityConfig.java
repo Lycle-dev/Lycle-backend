@@ -21,6 +21,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
+    @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
@@ -38,7 +39,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasRole("USER")
                 .anyRequest().permitAll()
                 .and()
