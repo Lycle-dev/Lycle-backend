@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import static com.Lycle.Server.domain.User.Role.USER;
@@ -109,13 +110,19 @@ public class UserService {
     public void updateTime(Long id) throws ParseException {
         User user = userRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        //시간 포맷 변경 후 비교
+        //가입 일자 포맷 변경
         String joinDate = user.getCreatedDate();
-        String loginDate = user.getModifiedDate();
         SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd");
         Date formatJoin = formatter.parse(joinDate);
-        Date formatLogin = formatter.parse(loginDate);
-        long diffDays = (formatLogin.getTime() - formatJoin.getTime()) / (24*60*60*1000); //일자수 차이
+
+        //현재 시간 포맷 변경
+         LocalDate now = LocalDate.now();
+         DateTimeFormatter nowFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+         String formattedNow = now.format(nowFormatter);
+         Date formatNow = formatter.parse(formattedNow);
+
+
+        long diffDays = (formatNow.getTime() - formatJoin.getTime()) / (24*60*60*1000); //일자수 차이
 
         user.updateTime(diffDays);
     }
