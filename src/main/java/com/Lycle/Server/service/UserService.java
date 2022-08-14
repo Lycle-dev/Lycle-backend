@@ -83,12 +83,12 @@ public class UserService {
         return -1L;
     }
 
-
     @Transactional
     public void updateInfo(Long id, UpdateInfoDto updateInfoDto) {
         User user = userRepository.findById(id).orElseThrow(()
                 -> new IllegalIdentifierException("존재하지 않는 회원 입니다."));
         user.updateInfo(updateInfoDto.getNickname(), updateInfoDto.getPassword());
     }
+
 
 }

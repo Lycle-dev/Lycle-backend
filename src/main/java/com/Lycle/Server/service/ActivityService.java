@@ -27,7 +27,7 @@ public class ActivityService {
 
     @Transactional(readOnly = true)
     public List<SearchActivityWrapper> searchActivity(Long id){
-        return activityRepository.findActivitiesByUserIdOrderByCreatedDateDesc(id);
+        return activityRepository.findAllByUserIdOrderByCreatedDateDesc(id);
     }
 
 }

@@ -22,7 +22,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<SearchOrderWrapper> searchOrder(Long id) {
-        return orderRepository.findOrdersByUserIdOrderByDateDesc(id);
+        return orderRepository.findAllByUserIdOrderByCreatedDateDesc(id);
     }
 
     @Transactional
