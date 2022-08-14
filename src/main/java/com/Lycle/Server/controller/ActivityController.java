@@ -4,18 +4,21 @@ import com.Lycle.Server.config.auth.UserPrincipal;
 import com.Lycle.Server.dto.Activity.RequestActivityDto;
 import com.Lycle.Server.dto.BasicResponse;
 import com.Lycle.Server.service.ActivityService;
+import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Collections;
 
 @RestController
 @RequiredArgsConstructor
 public class ActivityController {
     private final ActivityService activityService;
+    private final UserService userService;
 
 
     /*
@@ -38,8 +41,10 @@ public class ActivityController {
 
     //챌린지 기록
     @PostMapping("/user/activity")
-    public ResponseEntity<BasicResponse> saveActivity(Authentication authentication, @RequestBody RequestActivityDto requestActivityDto){
+    public ResponseEntity<BasicResponse> saveActivity(Authentication authentication, @RequestBody RequestActivityDto requestActivityDto) throws ParseException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        //활동일 수정
+        userService.updateTime(userPrincipal.getId());
         BasicResponse activityResponse = BasicResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .httpStatus(HttpStatus.CREATED)

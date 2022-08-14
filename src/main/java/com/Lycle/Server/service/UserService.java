@@ -1,8 +1,6 @@
 package com.Lycle.Server.service;
 
-import com.Lycle.Server.config.auth.UserPrincipal;
 import com.Lycle.Server.config.auth.token.JwtTokenProvider;
-import com.Lycle.Server.domain.User.Role;
 import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.domain.jpa.UserRepository;
 import com.Lycle.Server.dto.User.SearchProfileWrapper;
@@ -11,10 +9,14 @@ import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Date;
 
 import static com.Lycle.Server.domain.User.Role.USER;
 
@@ -66,6 +68,7 @@ public class UserService {
         return userRepository.findUserById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
     }
 
+    //친구 추가
     @Transactional
     public Long addFriends(Long id, String nickname) {
 
@@ -83,13 +86,7 @@ public class UserService {
         return -1L;
     }
 
-    @Transactional
-    public void updateInfo(Long id, UpdateInfoDto updateInfoDto) {
-        User user = userRepository.findById(id).orElseThrow(()
-                -> new IllegalIdentifierException("존재하지 않는 회원 입니다."));
-        user.updateInfo(updateInfoDto.getNickname(), updateInfoDto.getPassword());
-    }
-
+    //친구 삭제
     @Transactional
     public void deleteFriend(Long id, Long sharedId){
         User me = userRepository.findById(id).orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원 입니다."));
@@ -98,6 +95,29 @@ public class UserService {
         me.updateFriend(null);
         //친구 repository 에 친구 삭제
         friend.updateFriend(null);
+    }
+
+    //회원정보 수정
+    @Transactional
+    public void updateInfo(Long id, UpdateInfoDto updateInfoDto) {
+        User user = userRepository.findById(id).orElseThrow(()
+                -> new IllegalIdentifierException("존재하지 않는 회원 입니다."));
+        user.updateInfo(updateInfoDto.getNickname(), updateInfoDto.getPassword());
+    }
+
+    @Transactional
+    public void updateTime(Long id) throws ParseException {
+        User user = userRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        //시간 포맷 변경 후 비교
+        String joinDate = user.getCreatedDate();
+        String loginDate = user.getModifiedDate();
+        SimpleDateFormat formatter = new SimpleDateFormat("yy/MM/dd");
+        Date formatJoin = formatter.parse(joinDate);
+        Date formatLogin = formatter.parse(loginDate);
+        long diffDays = (formatLogin.getTime() - formatJoin.getTime()) / (24*60*60*1000); //일자수 차이
+
+        user.updateTime(diffDays);
     }
 
 }

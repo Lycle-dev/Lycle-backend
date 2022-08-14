@@ -1,5 +1,6 @@
 package com.Lycle.Server.domain.User;
 
+import com.Lycle.Server.domain.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import javax.persistence.*;;
 @Entity
 @Getter
 
-public class User {
+public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,5 +60,8 @@ public class User {
         this.sharedId = sharedId;
     }
 
+    public void updateTime(Long activityTime){
+        this.totalTime = totalTime;
+    }
 
 }
