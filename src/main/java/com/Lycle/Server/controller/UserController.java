@@ -1,13 +1,11 @@
 package com.Lycle.Server.controller;
 
 import com.Lycle.Server.config.auth.UserPrincipal;
-import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.dto.BasicResponse;
 import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import com.Lycle.Server.service.UserService;
-import com.google.api.Http;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +34,6 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<BasicResponse> loginUser(@RequestBody UserLoginDto userLoginDto) {
-
         BasicResponse searchUser = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
@@ -90,53 +87,6 @@ public class UserController {
         return new ResponseEntity<>(verifyResponse, verifyResponse.getHttpStatus());
     }
 
-    @GetMapping("/user/friend")
-    public ResponseEntity<BasicResponse> searchFriend(@RequestParam String nickname) {
-        BasicResponse response;
-        if (userService.verifyNickname(nickname)) {
-            response = BasicResponse.builder()
-                    .code(HttpStatus.OK.value())
-                    .httpStatus(HttpStatus.OK)
-                    .message("존재하는 사용자 입니다. 친구 맺기가 가능합니다.")
-                    .build();
-        } else {
-            response = BasicResponse.builder()
-                    .code(HttpStatus.NOT_FOUND.value())
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .message("존재하지 않는 사용자 입니다.")
-                    .build();
-        }
-        return new ResponseEntity<>(response, response.getHttpStatus());
-    }
-
-
-    @PutMapping("/user/friend")
-    public ResponseEntity<BasicResponse> addFriend(Authentication authentication, @RequestParam String nickname) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        userService.addFriends(userPrincipal.getId(), nickname);
-        BasicResponse basicResponse;
-        basicResponse = BasicResponse.builder()
-                .count(HttpStatus.CREATED.value())
-                .httpStatus(HttpStatus.CREATED)
-                .message("사용자와 친구 맺기가 완료 되었습니다.")
-                .build();
-
-        return new ResponseEntity<>(basicResponse, basicResponse.getHttpStatus());
-    }
-
-    @PutMapping("/user/del/friend")
-    public ResponseEntity<BasicResponse> deleteFriend(Authentication authentication){
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        userService.deleteFriend(userPrincipal.getId(), userPrincipal.getSharedId());
-        BasicResponse basicResponse = BasicResponse.builder()
-                .code(HttpStatus.OK.value())
-                .httpStatus(HttpStatus.OK)
-                .message("친구 삭제가 완료 되었습니다.")
-                .build();
-        return new ResponseEntity<>(basicResponse, basicResponse.getHttpStatus());
-    }
-
-
     @GetMapping("/user/profile")
     public ResponseEntity<BasicResponse> searchProfile(Authentication authentication) {
         BasicResponse profileResponse;
@@ -151,7 +101,6 @@ public class UserController {
         return new ResponseEntity<>(profileResponse, profileResponse.getHttpStatus());
     }
 
-
     @PutMapping("/user/profile")
     public ResponseEntity<BasicResponse> updateInfo(Authentication authentication, UpdateInfoDto updateInfoDto){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -163,6 +112,5 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(updateResponse, updateResponse.getHttpStatus());
     }
-
 
 }
