@@ -2,6 +2,7 @@ package com.Lycle.Server.service;
 
 import com.Lycle.Server.domain.Orders;
 import com.Lycle.Server.domain.jpa.OrderRepository;
+import com.Lycle.Server.dto.Order.MakeOrderDto;
 import com.Lycle.Server.dto.Order.RequestOrderDto;
 import com.Lycle.Server.dto.Order.SearchOrderWrapper;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +15,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
-
     @Transactional
-    public Long makeOrder(RequestOrderDto requestOrderDto) {
-        return orderRepository.save(requestOrderDto.toEntity()).getId();
+    public Long makeOrder(MakeOrderDto makeOrderDto) {
+        return orderRepository.save(Orders.builder()
+                        .itemId(makeOrderDto.getItemId())
+                        .userId(makeOrderDto.getUserId())
+                        .quantity(makeOrderDto.getQuantity())
+                        .totalPrice(makeOrderDto.getTotalPrice())
+                .build()).getId();
     }
 
     @Transactional(readOnly = true)
-    public List<SearchOrderWrapper> searchOrder(Long id) {
+    public SearchOrderWrapper loadOrderInfo(Long id){
+        return orderRepository.findOrdersById(id).orElseThrow(()->
+                new IllegalArgumentException("존재하지 않는 주문 입니다."));
+    }
+
+    @Transactional
+    public Long saveOrder(RequestOrderDto requestOrderDto){
+        Orders order = orderRepository.findById(requestOrderDto.getId())
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 주문 입니다."));
+
+        order.updateOrder(requestOrderDto.getAddress(), requestOrderDto.getTelephone());
+        return order.getId();
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<SearchOrderWrapper> searchAllOrder(Long id) {
         return orderRepository.findAllByUserIdOrderByCreatedDateDesc(id);
     }
 

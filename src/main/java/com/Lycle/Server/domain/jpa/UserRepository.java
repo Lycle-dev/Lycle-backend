@@ -3,8 +3,6 @@ package com.Lycle.Server.domain.jpa;
 import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.dto.User.SearchProfileWrapper;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -14,7 +12,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByNickname(String nickname);
     Optional<SearchProfileWrapper>findUserById(Long id);
     Optional<User> findUserByNickname(String nickname);
-
     @Override
     Optional<User> findById(Long id);
 
