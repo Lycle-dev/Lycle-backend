@@ -11,15 +11,20 @@ import lombok.Setter;
 public class RequestActivityDto {
     private String category;
     private String activityTime;
-    private boolean finishChecked;
-    private boolean rewardChecked;
+    private Boolean finishChecked;
+    //리워드 받았는지
+    private Boolean rewardChecked;
+    //리워드 요청했는지
+    private Boolean rewardRequested;
 
     @Builder
-    public RequestActivityDto(String category, String activityTime , boolean finishChecked, boolean rewardChecked){
+    public RequestActivityDto(String category, String activityTime , Boolean finishChecked,
+                              Boolean rewardChecked, Boolean rewardRequested){
         this.category = category;
         this.activityTime = activityTime;
         this.finishChecked = finishChecked;
         this.rewardChecked = rewardChecked;
+        this.rewardRequested = rewardRequested;
     }
 
 }

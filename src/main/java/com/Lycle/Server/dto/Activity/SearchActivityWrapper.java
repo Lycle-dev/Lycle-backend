@@ -6,4 +6,5 @@ public interface SearchActivityWrapper {
     String getActivityTime();
     Boolean getFinishChecked();
     Boolean getRewardChecked();
+    Boolean getRewardRequested();
 }
