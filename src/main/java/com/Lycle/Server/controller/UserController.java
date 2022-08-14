@@ -5,6 +5,7 @@ import com.Lycle.Server.dto.BasicResponse;
 import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
+import com.Lycle.Server.service.ActivityService;
 import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,11 +14,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final ActivityService activityService;
 
     @PostMapping("/join")
     public ResponseEntity<BasicResponse> joinUser(@RequestBody UserJoinDto userJoinDto) {
@@ -91,12 +95,15 @@ public class UserController {
     public ResponseEntity<BasicResponse> searchProfile(Authentication authentication) {
         BasicResponse profileResponse;
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Map<String,Object> result = new HashMap<>();
+        result.put("profile", userService.searchProfile(userPrincipal.getId()));
+        result.put("activities", activityService.searchActivity(userPrincipal.getId()));
         profileResponse = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
                 .message("회원 정보 조회가 완료되었습니다.")
                 .count(1)
-                .result(Collections.singletonList(userService.searchProfile(userPrincipal.getId())))
+                .result(Collections.singletonList(result))
                 .build();
         return new ResponseEntity<>(profileResponse, profileResponse.getHttpStatus());
     }

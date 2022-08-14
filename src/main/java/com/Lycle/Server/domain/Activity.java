@@ -25,11 +25,11 @@ public class Activity extends BaseTimeEntity {
 
     @Column(columnDefinition = "TINYINT(1)")
     @ColumnDefault("0")
-    private boolean finishChecked;
+    private Boolean finishChecked;
 
     @Column(columnDefinition = "TINYINT(1)")
     @ColumnDefault("0")
-    private boolean rewardChecked;
+    private Boolean rewardChecked;
 
     @Builder
     public Activity(Long id, Long userId, String category, String activityTime ,boolean finishChecked, boolean rewardChecked) {

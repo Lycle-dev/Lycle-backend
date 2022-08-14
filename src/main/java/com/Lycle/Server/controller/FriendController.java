@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,12 +74,17 @@ public class FriendController {
     public ResponseEntity<BasicResponse> searchFriend(Authentication authentication) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         Long sharedId = userPrincipal.getSharedId();
+        Map<String,Object> result = new HashMap<>();
+
+        //Map 을 활용하여 profile 정보와 activity 조회 결과를 한 array 에 담아서 전송송
+       result.put("profile", userService.searchProfile(sharedId));
+        result.put("activities", activityService.searchActivity(sharedId));
+
         BasicResponse friendResponse = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
                 .count(2)
-                .result(Collections.singletonList(userService.searchProfile(sharedId)))
-                .result(Collections.singletonList(activityService.searchActivity(sharedId)))
+                .result(Collections.singletonList(result))
                 .build();
 
         return new ResponseEntity<>(friendResponse, friendResponse.getHttpStatus());
