@@ -7,6 +7,7 @@ import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import com.Lycle.Server.service.UserService;
+import com.google.api.Http;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -123,6 +124,19 @@ public class UserController {
         return new ResponseEntity<>(basicResponse, basicResponse.getHttpStatus());
     }
 
+    @PutMapping("/user/del/friend")
+    public ResponseEntity<BasicResponse> deleteFriend(Authentication authentication){
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        userService.deleteFriend(userPrincipal.getId(), userPrincipal.getSharedId());
+        BasicResponse basicResponse = BasicResponse.builder()
+                .code(HttpStatus.OK.value())
+                .httpStatus(HttpStatus.OK)
+                .message("친구 삭제가 완료 되었습니다.")
+                .build();
+        return new ResponseEntity<>(basicResponse, basicResponse.getHttpStatus());
+    }
+
+
     @GetMapping("/user/profile")
     public ResponseEntity<BasicResponse> searchProfile(Authentication authentication) {
         BasicResponse profileResponse;
@@ -149,4 +163,6 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(updateResponse, updateResponse.getHttpStatus());
     }
+
+
 }

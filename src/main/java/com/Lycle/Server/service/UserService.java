@@ -90,5 +90,14 @@ public class UserService {
         user.updateInfo(updateInfoDto.getNickname(), updateInfoDto.getPassword());
     }
 
+    @Transactional
+    public void deleteFriend(Long id, Long sharedId){
+        User me = userRepository.findById(id).orElseThrow(()->new IllegalArgumentException("존재하지 않는 회원 입니다."));
+        User friend = userRepository.findById(sharedId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        //내 repository 에 친구 삭제
+        me.updateFriend(null);
+        //친구 repository 에 친구 삭제
+        friend.updateFriend(null);
+    }
 
 }

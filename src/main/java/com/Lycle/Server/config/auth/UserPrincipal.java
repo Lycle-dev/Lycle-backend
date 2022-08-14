@@ -21,6 +21,7 @@ public class UserPrincipal implements UserDetails {
     private String email;
     private String password;
     private Role role;
+    private Long sharedId;
     private Collection<? extends GrantedAuthority> authorities;
 
     @Override
@@ -33,6 +34,8 @@ public class UserPrincipal implements UserDetails {
         authorities.add(authority);
         return authorities;
     }
+
+    public Long getSharedId(){return this.user.getSharedId();}
 
     @Override
     public String getPassword() {
