@@ -1,25 +1,34 @@
 package com.Lycle.Server.service;
 
 import com.Lycle.Server.domain.Orders;
+import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.domain.jpa.OrderRepository;
+import com.Lycle.Server.domain.jpa.UserRepository;
 import com.Lycle.Server.dto.Order.MakeOrderDto;
 import com.Lycle.Server.dto.Order.RequestOrderDto;
 import com.Lycle.Server.dto.Order.SearchOrderWrapper;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final RewardService rewardService;
+    private final UserRepository userRepository;
+
     @Transactional
-    public Long makeOrder(MakeOrderDto makeOrderDto) {
+    public Long makeOrder(Long id,MakeOrderDto makeOrderDto) {
         return orderRepository.save(Orders.builder()
                         .itemId(makeOrderDto.getItemId())
-                        .userId(makeOrderDto.getUserId())
+                        .userId(id)
                         .quantity(makeOrderDto.getQuantity())
                         .totalPrice(makeOrderDto.getTotalPrice())
                 .build()).getId();
@@ -27,30 +36,40 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public SearchOrderWrapper loadOrderInfo(Long id){
-        return orderRepository.findOrdersById(id).orElseThrow(()->
-                new IllegalArgumentException("존재하지 않는 주문 입니다."));
+        return orderRepository.findOrderById(id);
     }
 
     @Transactional
-    public Long saveOrder(RequestOrderDto requestOrderDto){
-        Orders order = orderRepository.findById(requestOrderDto.getId())
-                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 주문 입니다."));
+    public Map saveOrder(Long id, Long orderId ,RequestOrderDto requestOrderDto) throws JSONException, IOException {
+        Map<String,Long> orderInfo = new HashMap<>();
 
-        order.updateOrder(requestOrderDto.getAddress(), requestOrderDto.getTelephone());
-        return order.getId();
+        User me = userRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원 입니다."));
+
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 주문 입니다."));
+        order.updateOrder(requestOrderDto.getReceiver(), requestOrderDto.getAddress(), requestOrderDto.getTelephone());
+        Long pointInfo = rewardService.transferReward(me.getEmail(),"admin@lycle.com", order.getTotalPrice().intValue());
+
+        orderInfo.put("orderId", order.getId());
+        orderInfo.put("pointInfo", pointInfo);
+
+        return orderInfo;
     }
 
 
     @Transactional(readOnly = true)
     public List<SearchOrderWrapper> searchAllOrder(Long id) {
-        return orderRepository.findAllByUserIdOrderByCreatedDateDesc(id);
+        return orderRepository.findAllByUserId(id);
     }
 
     @Transactional
-    public boolean deleteOrder(Long id, Long userId) {
-        Orders order = orderRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하는 주문이 아닙니다."));
+    public boolean deleteOrder(Long userId, Long orderId) throws JSONException, IOException {
+        Orders order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("존재하는 주문이 아닙니다."));
+        User me = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 회원 입니다."));
+        //주문을 삭제하고 다시 포인트 회수
         if (order.getUserId().equals(userId)) {
             orderRepository.delete(order);
+            Long point = rewardService.transferReward("admin@lycle.com",me.getEmail(),order.getTotalPrice().intValue());
             return true;
         }
         return false;

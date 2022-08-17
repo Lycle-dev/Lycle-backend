@@ -6,13 +6,16 @@ import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import com.Lycle.Server.service.ActivityService;
+import com.Lycle.Server.service.RewardService;
 import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,9 +25,10 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final ActivityService activityService;
+    private final RewardService rewardService;
 
     @PostMapping("/join")
-    public ResponseEntity<BasicResponse> joinUser(@RequestBody UserJoinDto userJoinDto) {
+    public ResponseEntity<BasicResponse> joinUser(@RequestBody UserJoinDto userJoinDto) throws JSONException, IOException {
         BasicResponse joinUserResponse = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.CREATED)
@@ -91,7 +95,8 @@ public class UserController {
         return new ResponseEntity<>(verifyResponse, verifyResponse.getHttpStatus());
     }
 
-    @GetMapping("/user/profile")
+    //내 운동 현황 조회
+    @GetMapping("/user/detail")
     public ResponseEntity<BasicResponse> searchProfile(Authentication authentication) {
         BasicResponse profileResponse;
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -119,5 +124,44 @@ public class UserController {
                 .build();
         return new ResponseEntity<>(updateResponse, updateResponse.getHttpStatus());
     }
+
+    //메인화면 조회
+    @GetMapping("/user/main")
+    public ResponseEntity<BasicResponse> loadMain(Authentication authentication) throws JSONException, IOException {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        BasicResponse mainResponse;
+        Map<String,Object> result = new HashMap<>();
+        if(userPrincipal.getSharedId() != null){
+            //내 프로필과 친구 프로필을 HashMap에 담아서 클라이언트에게 전송
+            result.put("me", userService.searchProfile(userPrincipal.getId()));
+            result.put("friend", userService.searchProfile(userPrincipal.getSharedId()));
+            result.put("reward", rewardService.getReward(userPrincipal.getId()));
+            result.put("request_check", activityService.checkRequestReward(userPrincipal.getId()));
+            result.put("friend_request", activityService.checkFriendReward(userPrincipal.getSharedId()));
+            mainResponse = BasicResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .httpStatus(HttpStatus.OK)
+                    .message("메인 화면 조회가 완료 되었습니다.")
+                    .result(Collections.singletonList(result))
+                    .build();
+        }else{
+            result.put("me", userService.searchProfile(userPrincipal.getId()));
+            result.put("friend", null);
+            result.put("reward", rewardService.getReward(userPrincipal.getId()));
+            result.put("request_check", activityService.checkRequestReward(userPrincipal.getId()));
+            result.put("friend_request", activityService.checkFriendReward(userPrincipal.getSharedId()));
+
+            mainResponse = BasicResponse.builder()
+                    .code(HttpStatus.OK.value())
+                    .httpStatus(HttpStatus.OK)
+                    .message("메인 화면 조회가 완료 되었습니다.")
+                    .result(Collections.singletonList(result))
+                    .build();
+        }
+
+        return new ResponseEntity<>(mainResponse, mainResponse.getHttpStatus());
+    }
+
+
 
 }

@@ -9,14 +9,12 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class MakeOrderDto {
-    private Long userId;
     private Long itemId;
     private Integer quantity;
     private Long totalPrice;
 
     @Builder
-    public MakeOrderDto(Long userId, Long itemId, Integer quantity, Long totalPrice){
-        this.userId =userId;
+    public MakeOrderDto(Long itemId, Integer quantity, Long totalPrice){
         this.itemId = itemId;
         this.quantity = quantity;
         this.totalPrice = totalPrice;

@@ -25,12 +25,13 @@ public class OrderController {
     //주문 생성
     @PostMapping("/user/order")
     public ResponseEntity<BasicResponse> makeOrder(Authentication authentication, @RequestBody MakeOrderDto makeOrderDto){
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         BasicResponse orderResponse = BasicResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .httpStatus(HttpStatus.CREATED)
                 .message("주문이 생성되었습니다.")
                 .count(1)
-                .result(Collections.singletonList(orderService.makeOrder(makeOrderDto)))
+                .result(Collections.singletonList(orderService.makeOrder(userPrincipal.getId(), makeOrderDto)))
                 .build();
 
         return new ResponseEntity<>(orderResponse, orderResponse.getHttpStatus());

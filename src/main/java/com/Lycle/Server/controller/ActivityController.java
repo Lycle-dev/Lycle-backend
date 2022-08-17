@@ -20,31 +20,10 @@ public class ActivityController {
     private final ActivityService activityService;
     private final UserService userService;
 
-
-    /*
-    //운동 시작 시간 기록
-    @PostMapping("/user/test")
-    public ResponseEntity<BasicResponse> startActivity(Authentication authentication){
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        BasicResponse activityResponse = BasicResponse.builder()
-                .code(HttpStatus.OK.value())
-                .httpStatus(HttpStatus.CREATED)
-                .message("챌린지 시작 시간이 기록되었습니다.")
-                .count(1)
-                .result(Collections.singletonList(userPrincipal.getEmail()))
-                .build();
-        return new ResponseEntity<>(activityResponse,activityResponse.getHttpStatus());
-    }
-
-     */
-
-
     //챌린지 기록
     @PostMapping("/user/activity")
     public ResponseEntity<BasicResponse> saveActivity(Authentication authentication, @RequestBody RequestActivityDto requestActivityDto) throws ParseException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        //활동일 수정
-        userService.updateTime(userPrincipal.getId());
         BasicResponse activityResponse = BasicResponse.builder()
                 .code(HttpStatus.CREATED.value())
                 .httpStatus(HttpStatus.CREATED)
@@ -52,6 +31,10 @@ public class ActivityController {
                 .count(1)
                 .result(Collections.singletonList(activityService.saveActivity(userPrincipal.getId() ,requestActivityDto)))
                 .build();
+
+        //활동일 수정
+        userService.updateTime(userPrincipal.getId());
+
         return new ResponseEntity<>(activityResponse,activityResponse.getHttpStatus());
     }
 
@@ -68,5 +51,21 @@ public class ActivityController {
 
         return new ResponseEntity<>(allActivity, allActivity.getHttpStatus());
     }
+
+    //챌린지 공유하기
+    @PutMapping("/user/activity/{id}")
+    public ResponseEntity<BasicResponse> shareActivity(Authentication authentication, @PathVariable Long id){
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        activityService.shareActivity(id);
+        BasicResponse activityResponse = BasicResponse.builder()
+                .code(HttpStatus.OK.value())
+                .httpStatus(HttpStatus.OK)
+                .message("챌린지 리워드가 요청되었습니다.")
+                .build();
+
+        return new ResponseEntity<>(activityResponse, activityResponse.getHttpStatus());
+    }
+
+
 
 }

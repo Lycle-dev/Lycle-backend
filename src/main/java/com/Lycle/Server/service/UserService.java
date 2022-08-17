@@ -9,10 +9,12 @@ import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import org.json.JSONException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -28,9 +30,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RewardService rewardService;
 
     @Transactional
-    public Long saveUser(UserJoinDto userJoinDto) {
+    public Long saveUser(UserJoinDto userJoinDto) throws JSONException, IOException {
+        rewardService.registerCheck(userJoinDto.getEmail());
         //최초 가입시 일반 사용자로 설정
         return userRepository.save(User.builder()
                 .email(userJoinDto.getEmail())
@@ -101,9 +105,17 @@ public class UserService {
     //회원정보 수정
     @Transactional
     public void updateInfo(Long id, UpdateInfoDto updateInfoDto) {
-        User user = userRepository.findById(id).orElseThrow(()
-                -> new IllegalIdentifierException("존재하지 않는 회원 입니다."));
-        user.updateInfo(updateInfoDto.getNickname(), updateInfoDto.getPassword());
+        User user = userRepository.findById(id).orElseThrow(
+                ()-> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        if(updateInfoDto.getNickname() != null && updateInfoDto.getPassword() != null){
+            user.updateNickname(updateInfoDto.getNickname());
+            user.updatePassword(updateInfoDto.getPassword());
+        }
+        else if(updateInfoDto.getNickname() == null && updateInfoDto.getPassword() != null){
+            user.updatePassword(updateInfoDto.getPassword());
+        }else{
+            user.updateNickname(updateInfoDto.getNickname());
+        }
     }
 
     @Transactional
@@ -126,5 +138,21 @@ public class UserService {
 
         user.updateTime(diffDays);
     }
+
+
+    //친구와 리워드 주고 받기
+    public boolean exchangeReward(String email, Long sharedId, int point) throws JSONException, IOException {
+        //친구의 정보 찾기
+        User friend = userRepository.findById(sharedId).orElseThrow(
+                ()-> new IllegalArgumentException("존재하지 않는 회원 입니다."));
+
+        //리워드 주기
+        Long result = rewardService.transferReward(email, friend.getEmail(), point);
+        if(result < 0L){
+            return false;
+        }
+        return true;
+    }
+
 
 }

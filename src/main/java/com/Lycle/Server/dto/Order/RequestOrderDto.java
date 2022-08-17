@@ -10,12 +10,14 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class RequestOrderDto {
     private Long id;
+    private String receiver;
     private String address;
     private String telephone;
 
     @Builder
-    public RequestOrderDto(Long id, String address, String telephone){
+    public RequestOrderDto(Long id, String receiver, String address, String telephone){
         this.id = id;
+        this.receiver = receiver;
         this.address = address;
         this.telephone = telephone;
     }

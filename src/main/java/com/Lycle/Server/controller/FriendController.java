@@ -1,18 +1,18 @@
 package com.Lycle.Server.controller;
 
 import com.Lycle.Server.config.auth.UserPrincipal;
+import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.dto.BasicResponse;
 import com.Lycle.Server.service.ActivityService;
 import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +76,7 @@ public class FriendController {
         Map<String,Object> result = new HashMap<>();
 
         //Map 을 활용하여 profile 정보와 activity 조회 결과를 한 array 에 담아서 전송송
-       result.put("profile", userService.searchProfile(sharedId));
+        result.put("profile", userService.searchProfile(sharedId));
         result.put("activities", activityService.searchActivity(sharedId));
 
         BasicResponse friendResponse = BasicResponse.builder()
@@ -87,6 +87,28 @@ public class FriendController {
                 .build();
 
         return new ResponseEntity<>(friendResponse, friendResponse.getHttpStatus());
+    }
+
+    @PutMapping("/friend/reward")
+    //친구와 리워드  주고 받기
+    public ResponseEntity<BasicResponse> exchangeReward(Authentication authentication, @RequestParam Long activityId, @RequestParam int point) throws JSONException, IOException {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        BasicResponse exchangeResponse;
+        if(activityService.saveReward(userPrincipal.getId(),activityId,point) > -1L){
+            exchangeResponse = BasicResponse.builder()
+                    .code(HttpStatus.CREATED.value())
+                    .httpStatus(HttpStatus.CREATED)
+                    .message("리워드 주고 받기가 완료 되었습니다.")
+                    .build();
+        }else{
+            exchangeResponse = BasicResponse.builder()
+                    .code(HttpStatus.NOT_FOUND.value())
+                    .httpStatus(HttpStatus.NOT_FOUND)
+                    .message("리워드 주고 받기에 실패하였습니다.")
+                    .build();
+        }
+
+        return new ResponseEntity<>(exchangeResponse, exchangeResponse.getHttpStatus());
     }
 
 }
