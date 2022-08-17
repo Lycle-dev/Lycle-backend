@@ -1,10 +1,11 @@
 package com.Lycle.Server.dto.Activity;
 
 public interface SearchActivityWrapper {
+    Long getId();
     String getCreatedDate();
     String getCategory();
     String getActivityTime();
-    Boolean getFinishChecked();
-    Boolean getRewardChecked();
-    Boolean getRewardRequested();
+    boolean isFinishChecked();
+    boolean isRewardChecked();
+    boolean isRequestReward();
 }

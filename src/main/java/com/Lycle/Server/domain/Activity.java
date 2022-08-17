@@ -4,12 +4,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
 
 @Entity
 @NoArgsConstructor
 @Getter
+@DynamicInsert
+@DynamicUpdate
 public class Activity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,28 +27,37 @@ public class Activity extends BaseTimeEntity {
     @Column(length = 50, nullable = true)
     private String activityTime;
 
-    @Column(columnDefinition = "TINYINT(1)")
     @ColumnDefault("0")
     private boolean finishChecked;
 
-    @Column(columnDefinition = "TINYINT(1)")
+    //리워드 받았는지
     @ColumnDefault("0")
     private boolean rewardChecked;
 
-    @Column(columnDefinition = "TINYINT(1)")
+    //리워드 요청 했는지
     @ColumnDefault("0")
-    private boolean rewardRequested;
+    private boolean requestReward;
+
 
     @Builder
     public Activity(Long id, Long userId, String category, String activityTime
-            ,Boolean finishChecked, Boolean rewardChecked, Boolean rewardRequested) {
+            ,boolean finishChecked, boolean rewardChecked, boolean requestReward) {
         this.id = id;
         this.userId = userId;
         this.category = category;
         this.activityTime = activityTime;
         this.finishChecked = finishChecked;
         this.rewardChecked = rewardChecked;
-        this.rewardRequested = rewardRequested;
+        this.requestReward = requestReward;
     }
+
+    public void updateRewardChecked(boolean rewardChecked){
+        this.rewardChecked = rewardChecked;
+    }
+
+    public void updateRequestReward(boolean requestReward){
+        this.requestReward = requestReward;
+    }
+
 
 }

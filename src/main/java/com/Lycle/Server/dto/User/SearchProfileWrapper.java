@@ -4,4 +4,5 @@ public interface SearchProfileWrapper {
     String getNickname();
     String getEmail();
     Long getTotalTime();
+    Long getSharedId();
 }

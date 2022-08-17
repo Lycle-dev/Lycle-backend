@@ -19,10 +19,10 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String email;
 
-    @Column(nullable = false, length = 300)
+    @Column(length = 300)
     private String password;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String nickname;
 
     @Column(nullable = true)
@@ -49,6 +49,14 @@ public class User extends BaseTimeEntity {
 
     public String getRoleKey() {
         return this.role.getKey();
+    }
+
+    public void updateNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String password){
+        this.password = password;
     }
 
     public void updateFriend(Long sharedId){

@@ -7,11 +7,13 @@ import com.Lycle.Server.dto.Order.RequestOrderDto;
 import com.Lycle.Server.service.OrderService;
 import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,12 +64,13 @@ public class OrderController {
 
     //주문 완료
     @PutMapping("/user/order/{id}")
-    public ResponseEntity<BasicResponse> saveOrder(Authentication authentication, @RequestBody RequestOrderDto requestOrderDto){
+    public ResponseEntity<BasicResponse> saveOrder(Authentication authentication,@PathVariable Long id, @RequestBody RequestOrderDto requestOrderDto) throws JSONException, IOException {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         BasicResponse orderResponse = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
                 .message("주문이 완료되었습니다.")
-                .result(Collections.singletonList(orderService.saveOrder(requestOrderDto)))
+                .result(Collections.singletonList(orderService.saveOrder(userPrincipal.getId(), id, requestOrderDto)))
                 .build();
 
         return new ResponseEntity<>(orderResponse, orderResponse.getHttpStatus());
@@ -78,14 +81,13 @@ public class OrderController {
     //완료 주문 조회
     @GetMapping("/user/order")
     public ResponseEntity<BasicResponse> searchOrder(Authentication authentication){
-        UserPrincipal userPrincipal = (UserPrincipal) authentication;
-        Long userId = userPrincipal.getId();
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         BasicResponse searchOrder = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
                 .message("주문 조회가 완료되었습니다.")
-                .count(orderService.searchAllOrder(userId).size())
-                .result(Collections.singletonList(orderService.searchAllOrder(userId)))
+                .count(orderService.searchAllOrder(userPrincipal.getId()).size())
+                .result(Collections.singletonList(orderService.searchAllOrder(userPrincipal.getId())))
                 .build();
 
         return new ResponseEntity<>(searchOrder, searchOrder.getHttpStatus());
@@ -95,9 +97,9 @@ public class OrderController {
 
     //주문 삭제
     @DeleteMapping("/user/order/{id}")
-    public ResponseEntity<BasicResponse> deleteOrder(Authentication authentication, @PathVariable Long orderId){
+    public ResponseEntity<BasicResponse> deleteOrder(Authentication authentication, @PathVariable Long id) throws JSONException, IOException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        orderService.deleteOrder(orderId, userPrincipal.getId());
+        orderService.deleteOrder(userPrincipal.getId(), id);
         BasicResponse orderResponse = BasicResponse.builder()
                 .code(HttpStatus.OK.value())
                 .httpStatus(HttpStatus.OK)
