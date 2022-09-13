@@ -22,7 +22,7 @@ public class RewardService {
 
     @Transactional
     public Long getReward(Long id) throws IOException, JSONException {
-        Long currentReward;
+        long currentReward;
         User user = userRepository.findById(id).orElseThrow(()-> new IllegalArgumentException("존재하지 않는 사용자 입니다."));
         //fabricService 호출 하여 byte [] 형태로 받아옴
         byte[] rewardInfo = fabricService.getReward(user.getEmail());
@@ -61,8 +61,30 @@ public class RewardService {
     }
 
     @Transactional
+    public int depositPoint(String email) throws IOException, JSONException {
+        int point;
+
+        //fabricService 호출하여 data 받아옴
+        byte[] deposit = fabricService.depositReward(email, 1000);
+
+        //Json 에서 데이터 추출
+        JSONObject depositInfo = new JSONObject(new String(deposit,StandardCharsets.UTF_8));
+
+        if (depositInfo.getString("StatusMessage").equals("success")) {
+            JSONObject data = depositInfo.getJSONObject("Data").getJSONObject("User");
+            point = data.getInt("Point");
+
+        } else {
+           point = -1;
+
+        }
+        return point;
+    }
+
+
+    @Transactional
     public Long transferReward(String userEmail, String friendEmail, int point) throws IOException, JSONException {
-        Long exchangePoint;
+        Long exchangePoint = 0L;
 
         //fabricService 호출 하여 byte [] 형태로 받아옴
         byte[] transferInfo = fabricService.exchangeReward(userEmail, friendEmail, point);
@@ -77,7 +99,7 @@ public class RewardService {
             //point 를 Long 타입으로 변환
             exchangePoint = Long.parseLong(payPoint);
 
-        } else {
+        } else if(reward.getString("StatusMessage").equals("not enough point to transfer")) {
             exchangePoint = -1L;
 
         }
