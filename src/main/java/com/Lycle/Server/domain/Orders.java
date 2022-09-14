@@ -40,6 +40,8 @@ public class Orders extends BaseTimeEntity {
 
     @Column(nullable = false)
     private Long totalPrice;
+    @ColumnDefault("0")
+    private boolean orderState;
 
     @ColumnDefault("0")
     private boolean orderState;
@@ -68,5 +70,5 @@ public class Orders extends BaseTimeEntity {
     public void updateState(boolean orderState){
         this.orderState = orderState;
     }
-
+    
 }

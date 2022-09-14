@@ -45,14 +45,12 @@ public class ActivityService {
         Activity activity = activityRepository.findById(activityId).orElseThrow(()->
                 new IllegalArgumentException("존재하지 않는 챌린지 입니다."));
 
-        log.debug(String.valueOf(activityRepository.findActivityByActivityTimeAndRequestReward(activity.getUserId(), activity.getActivityTime())));
-
         //오늘 공유한 챌린지가 없을 때
-        if(activityRepository.findActivityByActivityTimeAndRequestReward(activity.getUserId(),activity.getActivityTime()) < 0L){
-            activity.updateRequestReward(true);
-            return true;
+        if(activityRepository.findActivityByActivityTimeAndRequestReward(activity.getUserId(),activity.getCreatedDate()) > 0L){
+           return false;
         }
-        return false;
+        activity.updateRequestReward(true);
+        return true;
     }
 
     @Transactional
@@ -128,8 +126,8 @@ public class ActivityService {
         DateTimeFormatter nowFormatter = DateTimeFormatter.ofPattern("yy/MM/dd");
         String formattedNow = now.format(nowFormatter);
 
-        //완료한 챌린지가 없으면
-        if(activityRepository.findActivityByActivityTime(id,formattedNow) > 1L){
+        //완료한 챌린지가 있으면
+        if(activityRepository.findActivityByActivityTime(id,formattedNow) > 0L){
             return true;
         }
         return false;

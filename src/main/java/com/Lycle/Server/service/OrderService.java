@@ -50,6 +50,7 @@ public class OrderService {
         Long pointInfo = rewardService.transferReward(me.getEmail(),"admin@lycle.com", order.getTotalPrice().intValue());
 
         order.updateOrder(requestOrderDto.getReceiver(), requestOrderDto.getAddress(), requestOrderDto.getTelephone());
+        order.updateState(true);
 
         orderInfo.put("orderId", order.getId());
         orderInfo.put("pointInfo", pointInfo);
