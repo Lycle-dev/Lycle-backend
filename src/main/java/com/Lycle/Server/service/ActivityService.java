@@ -7,14 +7,18 @@ import com.Lycle.Server.domain.jpa.UserRepository;
 import com.Lycle.Server.dto.Activity.RequestActivityDto;
 import com.Lycle.Server.dto.Activity.SearchActivityWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ActivityService {
     private final ActivityRepository activityRepository;
@@ -37,15 +41,23 @@ public class ActivityService {
     }
 
     @Transactional
-    public void shareActivity(Long activityId){
+    public boolean shareActivity(Long activityId){
         Activity activity = activityRepository.findById(activityId).orElseThrow(()->
                 new IllegalArgumentException("존재하지 않는 챌린지 입니다."));
-        activity.updateRequestReward(true);
+
+        log.debug(String.valueOf(activityRepository.findActivityByActivityTimeAndRequestReward(activity.getUserId(), activity.getActivityTime())));
+
+        //오늘 공유한 챌린지가 없을 때
+        if(activityRepository.findActivityByActivityTimeAndRequestReward(activity.getUserId(),activity.getActivityTime()) < 0L){
+            activity.updateRequestReward(true);
+            return true;
+        }
+        return false;
     }
 
     @Transactional
     public Long saveReward(Long id, Long activityId, int point) throws JSONException, IOException {
-        Long reward = 0L;
+        Long reward;
 
         //로그인 한 유저의 정보 먼저 찾기
         User me =  userRepository.findById(id).orElseThrow(()
@@ -73,7 +85,7 @@ public class ActivityService {
     //요청하지 않은 리워드가 있는지 확인
     @Transactional
     public boolean checkRequestReward(Long id){
-        if(activityRepository.findActivityByUserId(id) > 1L){
+        if(activityRepository.findActivityByRequestRewardAndUserId(id) > 1L){
             return true;
         }
         return false;
@@ -83,6 +95,30 @@ public class ActivityService {
     @Transactional
     public boolean checkFriendReward(Long sharedId){
         if(activityRepository.findActivityById(sharedId) > 1L){
+            return true;
+        }
+        return false;
+    }
+
+    //사용자가 당일 완료한 챌린지가 있는지 확인
+    @Transactional
+    public boolean checkFinishActivity(Long id){
+        //User를 찾기
+        User user = userRepository.findById(id).orElseThrow(
+                ()->new IllegalArgumentException("존재하지 않는 사용자 입니다."));
+        /*
+        Activity activity = activityRepository.findActivityByUserId(id).orElseThrow(
+                ()-> new IllegalArgumentException("존재 하지 않는 활동 입니다."));
+
+         */
+
+        //로그인 한 일자 얻어오기
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter nowFormatter = DateTimeFormatter.ofPattern("yy/MM/dd");
+        String formattedNow = now.format(nowFormatter);
+
+        //완료한 챌린지가 없으면
+        if(activityRepository.findActivityByActivityTime(id,formattedNow) > 1L){
             return true;
         }
         return false;

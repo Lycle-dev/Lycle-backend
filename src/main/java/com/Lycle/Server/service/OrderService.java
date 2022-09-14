@@ -47,8 +47,9 @@ public class OrderService {
 
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(()-> new IllegalArgumentException("존재하지 않는 주문 입니다."));
-        order.updateOrder(requestOrderDto.getReceiver(), requestOrderDto.getAddress(), requestOrderDto.getTelephone());
         Long pointInfo = rewardService.transferReward(me.getEmail(),"admin@lycle.com", order.getTotalPrice().intValue());
+
+        order.updateOrder(requestOrderDto.getReceiver(), requestOrderDto.getAddress(), requestOrderDto.getTelephone());
 
         orderInfo.put("orderId", order.getId());
         orderInfo.put("pointInfo", pointInfo);

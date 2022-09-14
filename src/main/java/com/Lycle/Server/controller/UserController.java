@@ -8,6 +8,7 @@ import com.Lycle.Server.dto.User.UserLoginDto;
 import com.Lycle.Server.service.ActivityService;
 import com.Lycle.Server.service.RewardService;
 import com.Lycle.Server.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONException;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ public class UserController {
     private final ActivityService activityService;
     private final RewardService rewardService;
 
+    @Operation(summary = "join", description = "사용자 회원가입")
     @PostMapping("/join")
     public ResponseEntity<BasicResponse> joinUser(@RequestBody UserJoinDto userJoinDto) throws JSONException, IOException {
         BasicResponse joinUserResponse = BasicResponse.builder()
@@ -40,6 +42,7 @@ public class UserController {
 
     }
 
+    @Operation(summary = "login", description = "사용자 로그인")
     @PostMapping("/login")
     public ResponseEntity<BasicResponse> loginUser(@RequestBody UserLoginDto userLoginDto) {
         BasicResponse searchUser = BasicResponse.builder()
@@ -52,6 +55,7 @@ public class UserController {
         return new ResponseEntity<>(searchUser, searchUser.getHttpStatus());
     }
 
+    @Operation(summary = "verify", description = "사용자 이메일 중복확인")
     @GetMapping("/verify/email")
     public ResponseEntity<BasicResponse> verifyEmail(@RequestParam String email) {
         BasicResponse verifyResponse;
@@ -74,6 +78,7 @@ public class UserController {
         return new ResponseEntity<>(verifyResponse, verifyResponse.getHttpStatus());
     }
 
+    @Operation(summary = "verify", description = "사용자 닉네임 중복확인")
     @GetMapping("/verify/nickname")
     public ResponseEntity<BasicResponse> verifyNickname(@RequestParam String nickname) {
         BasicResponse verifyResponse;
@@ -114,7 +119,7 @@ public class UserController {
     }
 
     @PutMapping("/user/profile")
-    public ResponseEntity<BasicResponse> updateInfo(Authentication authentication, UpdateInfoDto updateInfoDto){
+    public ResponseEntity<BasicResponse> updateInfo(Authentication authentication, @RequestBody UpdateInfoDto updateInfoDto){
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         userService.updateInfo(userPrincipal.getId(), updateInfoDto);
         BasicResponse updateResponse = BasicResponse.builder()
@@ -136,20 +141,23 @@ public class UserController {
             result.put("me", userService.searchProfile(userPrincipal.getId()));
             result.put("friend", userService.searchProfile(userPrincipal.getSharedId()));
             result.put("reward", rewardService.getReward(userPrincipal.getId()));
-            result.put("request_check", activityService.checkRequestReward(userPrincipal.getId()));
-            result.put("friend_request", activityService.checkFriendReward(userPrincipal.getSharedId()));
+            result.put("requestCheck", activityService.checkRequestReward(userPrincipal.getId()));
+            result.put("friendRequest", activityService.checkFriendReward(userPrincipal.getSharedId()));
+            result.put("activityFinish", activityService.checkFinishActivity(userPrincipal.getId()));
             mainResponse = BasicResponse.builder()
                     .code(HttpStatus.OK.value())
                     .httpStatus(HttpStatus.OK)
                     .message("메인 화면 조회가 완료 되었습니다.")
                     .result(Collections.singletonList(result))
                     .build();
-        }else{
+        }
+        else{
             result.put("me", userService.searchProfile(userPrincipal.getId()));
             result.put("friend", null);
             result.put("reward", rewardService.getReward(userPrincipal.getId()));
-            result.put("request_check", activityService.checkRequestReward(userPrincipal.getId()));
-            result.put("friend_request", activityService.checkFriendReward(userPrincipal.getSharedId()));
+            result.put("request_check", null);
+            result.put("friend_request", null);
+            result.put("activityFinish", activityService.checkFinishActivity(userPrincipal.getId()));
 
             mainResponse = BasicResponse.builder()
                     .code(HttpStatus.OK.value())

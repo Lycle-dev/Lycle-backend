@@ -8,7 +8,7 @@ import com.Lycle.Server.dto.User.UpdateInfoDto;
 import com.Lycle.Server.dto.User.UserJoinDto;
 import com.Lycle.Server.dto.User.UserLoginDto;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +26,7 @@ import static com.Lycle.Server.domain.User.Role.USER;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,7 +35,10 @@ public class UserService {
 
     @Transactional
     public Long saveUser(UserJoinDto userJoinDto) throws JSONException, IOException {
+        //체인 서버에 회원 정보 생성
         rewardService.registerCheck(userJoinDto.getEmail());
+        //회원 가입 시 자동으로 1000 포인트 지급
+        rewardService.depositPoint(userJoinDto.getEmail());
         //최초 가입시 일반 사용자로 설정
         return userRepository.save(User.builder()
                 .email(userJoinDto.getEmail())
@@ -129,17 +133,21 @@ public class UserService {
 
         //현재 시간 포맷 변경
          LocalDate now = LocalDate.now();
-         DateTimeFormatter nowFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+         DateTimeFormatter nowFormatter = DateTimeFormatter.ofPattern("yy/MM/dd");
          String formattedNow = now.format(nowFormatter);
          Date formatNow = formatter.parse(formattedNow);
 
+         Integer diffDays = formatJoin.compareTo(formatNow);
 
-        long diffDays = (formatNow.getTime() - formatJoin.getTime()) / (24*60*60*1000); //일자수 차이
+         //날짜가 로그인 날 보다 뒤일때만 활동일자 증가
+         if(diffDays > 0){
+             user.updateTime(user.getTotalTime()+1);
+         }
 
-        user.updateTime(diffDays);
     }
 
 
+    /*
     //친구와 리워드 주고 받기
     public boolean exchangeReward(String email, Long sharedId, int point) throws JSONException, IOException {
         //친구의 정보 찾기
@@ -153,6 +161,8 @@ public class UserService {
         }
         return true;
     }
+
+     */
 
 
 }

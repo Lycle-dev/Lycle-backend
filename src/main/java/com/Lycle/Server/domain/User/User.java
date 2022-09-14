@@ -4,8 +4,11 @@ import com.Lycle.Server.domain.BaseTimeEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
-import javax.persistence.*;;
+
+import javax.persistence.*;
 
 @NoArgsConstructor
 @Entity
@@ -19,25 +22,23 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private String email;
 
-    @Column(length = 300)
+    @Column(length = 300, nullable = false)
     private String password;
 
-    @Column(length = 20)
+    @Column(length = 20,nullable = false)
     private String nickname;
 
-    @Column(nullable = true)
     private Long sharedId;
 
-    @Column(nullable = true)
-    private Long totalTime;
+    @ColumnDefault("0")
+    private Integer totalTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-
     @Builder
-    public User(Long id, String email,String password, String nickname, Long sharedId, Long totalTime, Role role){
+    public User(Long id, String email,String password, String nickname, Long sharedId, Integer totalTime, Role role){
         this.id = id;
         this.email =email;
         this.password = password;
@@ -63,7 +64,7 @@ public class User extends BaseTimeEntity {
         this.sharedId = sharedId;
     }
 
-    public void updateTime(Long activityTime){
+    public void updateTime(Integer totalTime){
         this.totalTime = totalTime;
     }
 

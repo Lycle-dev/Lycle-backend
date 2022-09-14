@@ -1,8 +1,8 @@
 package com.Lycle.Server.controller;
 
 import com.Lycle.Server.config.auth.UserPrincipal;
-import com.Lycle.Server.domain.User.User;
 import com.Lycle.Server.dto.BasicResponse;
+import com.Lycle.Server.dto.User.RewardRequestDto;
 import com.Lycle.Server.service.ActivityService;
 import com.Lycle.Server.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -91,10 +91,10 @@ public class FriendController {
 
     @PutMapping("/friend/reward")
     //친구와 리워드  주고 받기
-    public ResponseEntity<BasicResponse> exchangeReward(Authentication authentication, @RequestParam Long activityId, @RequestParam int point) throws JSONException, IOException {
+    public ResponseEntity<BasicResponse> exchangeReward(Authentication authentication, @RequestBody RewardRequestDto rewardRequestDto) throws JSONException, IOException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         BasicResponse exchangeResponse;
-        if(activityService.saveReward(userPrincipal.getId(),activityId,point) > -1L){
+        if(activityService.saveReward(userPrincipal.getId(), rewardRequestDto.getActivityId(), rewardRequestDto.getPoint()) > -1L){
             exchangeResponse = BasicResponse.builder()
                     .code(HttpStatus.CREATED.value())
                     .httpStatus(HttpStatus.CREATED)

@@ -38,9 +38,9 @@ public class JwtTokenProvider {
     public String createToken(User user) {
 
         Claims claims = Jwts.claims().setSubject(user.getEmail()); // JWT payload 에 저장되는 정보단위
-        claims.put("role", user.getId());// 정보는 key / value 쌍으로 저장된다.
+        claims.put("ID", user.getId());// 정보는 key / value 쌍으로 저장된다.
         claims.put("role", user.getRole());
-        claims.put("role", user.getNickname());
+        claims.put("Nickname", user.getNickname());
         Date now = new Date();
         return Jwts.builder()
                 .setClaims(claims) // 정보 저장
@@ -61,7 +61,7 @@ public class JwtTokenProvider {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
     }
 
-    // Request의 Header에서 token 값을 가져옵니다. "X-AUTH-TOKEN" : "TOKEN값'
+    // Request의 Header에서 token 값을 가져옵니다. "Authorization" : "TOKEN값'
     public String resolveToken(HttpServletRequest request) {
         return request.getHeader("Authorization");
     }

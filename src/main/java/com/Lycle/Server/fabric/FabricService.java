@@ -1,8 +1,6 @@
 package com.Lycle.Server.fabric;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.json.JSONException;
@@ -20,16 +18,15 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class FabricService{
 
-    // Path to a common connection profile describing the network.
-    Path walletDirectory = Paths.get("/home/lycle.sungshin/server/wallet");
-    Path networkConfigFile = Paths.get("/home/lycle.sungshin/server/connection.json");
     Wallet wallet;
     byte[] queryAllResult = new byte[0];
 
-
+    // Path to a common connection profile describing the network.
+    Path walletDirectory = Paths.get("/home/lycle.sungshin/server/wallet");
+    Path networkConfigFile = Paths.get("/home/lycle.sungshin/server/connection.json");
 
     public byte[] getReward(String email) throws IOException {
-        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "false");
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
 
         wallet = Wallet.createFileSystemWallet(walletDirectory);
 
@@ -52,22 +49,19 @@ public class FabricService{
 
             // Evaluate transactions that query state from the ledger.
             queryAllResult = contract.evaluateTransaction("getPoint", String.valueOf(info));
-
             log.info(String.valueOf(LocalDateTime.now()));
-
-            builder.connect().close();
-
 
         } catch (ContractException | JSONException e) {
             e.printStackTrace();
         }
 
-
+        builder.connect().close();
+        log.info(String.valueOf(LocalDateTime.now()));
         return queryAllResult;
     }
 
     public byte[] registerUser(String email) throws IOException{
-        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "false");
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
 
         // Load an existing wallet holding identities used to access the network.
         wallet = Wallet.createFileSystemWallet(walletDirectory);
@@ -95,13 +89,14 @@ public class FabricService{
         } catch (ContractException | InterruptedException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
-
+        builder.connect().close();
+        log.info(String.valueOf(LocalDateTime.now()));
         return queryAllResult;
 
     }
 
     public byte[] depositReward(String email, int point) throws IOException {
-        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "false");
+        System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "true");
 
         wallet = Wallet.createFileSystemWallet(walletDirectory);
 
@@ -124,16 +119,17 @@ public class FabricService{
             info.put("Point", point);
 
             // Evaluate transactions that query state from the ledger.
-            queryAllResult = contract.evaluateTransaction("depositPoint", String.valueOf(info));
+            queryAllResult = contract.submitTransaction("depositPoint", String.valueOf(info));
 
-        } catch (ContractException | JSONException e) {
+        } catch (ContractException | JSONException | InterruptedException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
             e.printStackTrace();
         }
-
+        builder.connect().close();
+        log.info(String.valueOf(LocalDateTime.now()));
         return queryAllResult;
     }
-
-
 
     public byte[] exchangeReward(String senderEmail, String receiverEmail, int point) throws IOException{
         System.setProperty("org.hyperledger.fabric.sdk.service_discovery.as_localhost", "false");
@@ -167,7 +163,8 @@ public class FabricService{
         } catch (ContractException | InterruptedException | TimeoutException | JSONException e) {
             e.printStackTrace();
         }
-
+        builder.connect().close();
+        log.info(String.valueOf(LocalDateTime.now()));
         return queryAllResult;
 
     }
