@@ -25,8 +25,8 @@ public class JwtTokenProvider {
 
     private String secretKey = "lyclejwttoken";
 
-    // 토큰 유효시간 60분
-    private long tokenValidTime = 60 * 60 * 1000L;
+    // 토큰 유효시간 40분
+    private long tokenValidTime = 40 * 60 * 1000L;
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
     @PostConstruct
